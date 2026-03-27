@@ -8,7 +8,7 @@
         <p class="section-subtitle text-lg">{{ $settings->hero_subheading }}</p>
         <div class="mt-8 flex flex-wrap gap-4">
             <a href="{{ route('public.register') }}" class="btn-primary">{{ $settings->hero_cta_text }}</a>
-            @if($settings->agenda_html || $settings->agenda_url)
+            @if($settings->hasAgendaContent())
                 <a href="{{ route('public.agenda') }}" class="btn-secondary">{{ $settings->agenda_button_text }}</a>
             @endif
         </div>
@@ -66,7 +66,7 @@
     <div class="glass-panel p-8 text-center">
         <h3 class="text-3xl font-black text-white">{{ $sections['agenda_cta']->title ?? 'View the Agenda' }}</h3>
         <p class="mt-3 text-slate-300">{{ $sections['agenda_cta']->body ?? 'See keynotes, breakouts, and planning sessions.' }}</p>
-        @if($settings->agenda_html || $settings->agenda_url)
+        @if($settings->hasAgendaContent())
             <a href="{{ route('public.agenda') }}" class="btn-primary mt-6">{{ $settings->agenda_button_text }}</a>
         @endif
     </div>

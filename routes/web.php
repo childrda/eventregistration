@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminEventSwitchController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AgendaItemController;
 use App\Http\Controllers\Admin\ContentSectionController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\EmailTemplateController;
+use App\Http\Controllers\Admin\EventManagementController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\LunchOptionController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
@@ -13,23 +16,29 @@ use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\Admin\SpeakerController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\TshirtSizeController;
+use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicEventSelectionController;
 use App\Http\Controllers\RegistrationController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [HomeController::class, 'index'])->name('public.home');
-Route::get('/what', [PageController::class, 'what'])->name('public.what');
-Route::get('/when-where', [PageController::class, 'whenWhere'])->name('public.when-where');
-Route::get('/agenda', [PageController::class, 'agenda'])->name('public.agenda');
-Route::get('/faq', [PageController::class, 'faq'])->name('public.faq');
-Route::get('/contact', [ContactController::class, 'create'])->name('public.contact');
-Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
-Route::get('/register', [RegistrationController::class, 'create'])->name('public.register');
-Route::post('/register', [RegistrationController::class, 'store'])->name('public.register.store');
-Route::get('/register/success', [RegistrationController::class, 'success'])->name('public.register.success');
+Route::middleware('public.event')->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('public.home');
+    Route::post('/select-event', [PublicEventSelectionController::class, 'store'])->name('public.select-event');
+    Route::get('/what', [PageController::class, 'what'])->name('public.what');
+    Route::get('/when-where', [PageController::class, 'whenWhere'])->name('public.when-where');
+    Route::get('/agenda', [AgendaController::class, 'index'])->name('public.agenda');
+    Route::get('/agenda/{agenda_item}', [AgendaController::class, 'show'])->name('public.agenda.show');
+    Route::get('/faq', [PageController::class, 'faq'])->name('public.faq');
+    Route::get('/contact', [ContactController::class, 'create'])->name('public.contact');
+    Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
+    Route::get('/register', [RegistrationController::class, 'create'])->name('public.register');
+    Route::post('/register', [RegistrationController::class, 'store'])->name('public.register.store');
+    Route::get('/register/success', [RegistrationController::class, 'success'])->name('public.register.success');
+});
 
 Route::middleware('auth')->group(function () {
     Route::redirect('/dashboard', '/admin')->name('dashboard');
@@ -37,7 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::prefix('admin')->name('admin.')->middleware('admin.access')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware(['admin.access', 'admin.event'])->group(function () {
+        Route::post('/switch-event', AdminEventSwitchController::class)->name('switch-event');
+
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
@@ -45,6 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/site-settings/edit', [SiteSettingController::class, 'edit'])->name('site-settings.edit');
         Route::put('/site-settings', [SiteSettingController::class, 'update'])->name('site-settings.update');
 
+        Route::resource('agenda-items', AgendaItemController::class)->except(['show']);
         Route::resource('speakers', SpeakerController::class);
         Route::resource('pages', AdminPageController::class)->only(['index', 'edit', 'update']);
         Route::resource('faqs', AdminFaqController::class);
@@ -59,6 +71,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/sent-emails', [SentEmailController::class, 'index'])->name('sent-emails.index');
         Route::get('/sent-emails/{sent_email}', [SentEmailController::class, 'show'])->name('sent-emails.show');
+    });
+
+    Route::prefix('admin')->name('admin.')->middleware(['admin.access', 'admin.event', 'super.admin'])->group(function () {
+        Route::resource('events', EventManagementController::class)->only(['index', 'create', 'store', 'edit', 'update']);
     });
 });
 

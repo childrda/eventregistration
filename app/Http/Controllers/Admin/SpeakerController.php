@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSpeakerRequest;
 use App\Http\Requests\Admin\UpdateSpeakerRequest;
-use App\Http\Controllers\Controller;
 use App\Models\Speaker;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +14,11 @@ class SpeakerController extends Controller
 {
     public function index()
     {
-        $speakers = Speaker::query()->orderBy('sort_order')->paginate(15);
+        $speakers = Speaker::query()
+            ->forAdminEvent()
+            ->orderBy('sort_order')
+            ->paginate(15);
+
         return view('admin.speakers.index', compact('speakers'));
     }
 
@@ -29,7 +33,9 @@ class SpeakerController extends Controller
         if ($request->hasFile('image_path')) {
             $data['image_path'] = $this->storeSpeakerImage($request->file('image_path'));
         }
+        $data['event_id'] = session('admin_event_id');
         Speaker::query()->create($data);
+
         return redirect()->route('admin.speakers.index')->with('success', 'Speaker created.');
     }
 
@@ -53,6 +59,7 @@ class SpeakerController extends Controller
             unset($data['image_path']);
         }
         $speaker->update($data);
+
         return redirect()->route('admin.speakers.index')->with('success', 'Speaker updated.');
     }
 
@@ -60,6 +67,7 @@ class SpeakerController extends Controller
     {
         $this->deleteSpeakerImage($speaker->image_path);
         $speaker->delete();
+
         return redirect()->route('admin.speakers.index')->with('success', 'Speaker deleted.');
     }
 
@@ -82,6 +90,7 @@ class SpeakerController extends Controller
 
         if (str_starts_with($path, 'uploads/')) {
             File::delete(public_path($path));
+
             return;
         }
 

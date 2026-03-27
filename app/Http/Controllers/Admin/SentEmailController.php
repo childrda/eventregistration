@@ -10,7 +10,12 @@ class SentEmailController extends Controller
 {
     public function index()
     {
-        $query = SentEmail::query()->with(['registration', 'emailTemplate'])->latest();
+        $eventId = (int) session('admin_event_id');
+
+        $query = SentEmail::query()
+            ->where('event_id', $eventId)
+            ->with(['registration', 'emailTemplate'])
+            ->latest();
 
         if ($template = request('email_template_id')) {
             $query->where('email_template_id', $template);
@@ -24,13 +29,14 @@ class SentEmailController extends Controller
 
         return view('admin.sent-emails.index', [
             'sentEmails' => $query->paginate(25)->withQueryString(),
-            'templates' => EmailTemplate::query()->orderBy('name')->get(),
+            'templates' => EmailTemplate::query()->forAdminEvent()->orderBy('name')->get(),
         ]);
     }
 
     public function show(SentEmail $sent_email)
     {
         $sent_email->load(['registration', 'emailTemplate']);
+
         return view('admin.sent-emails.show', ['sentEmail' => $sent_email]);
     }
 }

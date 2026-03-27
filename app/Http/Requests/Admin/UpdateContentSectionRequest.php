@@ -22,8 +22,18 @@ class UpdateContentSectionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $eventId = (int) session('admin_event_id');
+        $section = $this->route('content_section');
+
         return [
-            'section_key' => ['required', 'string', 'max:255', Rule::unique('content_sections', 'section_key')->ignore($this->route('content_section'))],
+            'section_key' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('content_sections', 'section_key')
+                    ->where('event_id', $eventId)
+                    ->ignore($section?->id),
+            ],
             'title' => ['required', 'string', 'max:255'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'body' => ['nullable', 'string'],

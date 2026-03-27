@@ -15,8 +15,13 @@ class AdminUserSeeder extends Seeder
     {
         User::query()->updateOrCreate(
             ['email' => 'admin@vacybercon.com'],
-            ['name' => 'Cybercon Admin', 'password' => Hash::make('ChangeMeNow!123'), 'is_admin' => true, 'is_active' => true]
+            [
+                'name' => 'Cybercon Admin',
+                'password' => Hash::make('ChangeMeNow!123'),
+                'is_admin' => true,
+                'is_active' => true,
+                'is_super_admin' => true,
+            ]
         );
     }
 }
-""

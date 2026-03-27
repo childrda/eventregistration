@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SentEmail extends Model
 {
+    use BelongsToEvent;
     use HasFactory;
 
     protected $fillable = [
+        'event_id',
         'email_template_id',
         'registration_id',
         'to_email',

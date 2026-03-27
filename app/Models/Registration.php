@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 
 class Registration extends Model
 {
+    use BelongsToEvent;
     use HasFactory;
 
     protected $fillable = [
+        'event_id',
         'district_name',
         'first_name',
         'last_name',

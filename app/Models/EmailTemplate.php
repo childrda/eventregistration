@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToEvent;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmailTemplate extends Model
 {
+    use BelongsToEvent;
     use HasFactory;
 
     protected $fillable = [
+        'event_id',
         'key',
         'name',
         'subject',

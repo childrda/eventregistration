@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreContentSectionRequest extends FormRequest
 {
@@ -21,8 +22,15 @@ class StoreContentSectionRequest extends FormRequest
      */
     public function rules(): array
     {
+        $eventId = (int) session('admin_event_id');
+
         return [
-            'section_key' => ['required', 'string', 'max:255', 'unique:content_sections,section_key'],
+            'section_key' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('content_sections', 'section_key')->where('event_id', $eventId),
+            ],
             'title' => ['required', 'string', 'max:255'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'body' => ['nullable', 'string'],

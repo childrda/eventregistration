@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Middleware\EnsureAdminAccess;
+use App\Http\Middleware\EnsureAdminEventContext;
+use App\Http\Middleware\EnsureSuperAdmin;
+use App\Http\Middleware\HandlePublicEventContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin.access' => EnsureAdminAccess::class,
+            'admin.event' => EnsureAdminEventContext::class,
+            'super.admin' => EnsureSuperAdmin::class,
+            'public.event' => HandlePublicEventContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

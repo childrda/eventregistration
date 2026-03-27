@@ -24,10 +24,31 @@
                 @if (request()->routeIs('admin.*'))
                     <aside class="hidden w-64 shrink-0 lg:block">
                         <div class="admin-sidebar rounded-xl border border-slate-200 bg-white p-4 text-slate-700 shadow-sm">
+                            @isset($accessibleAdminEvents, $currentAdminEvent)
+                                @if($accessibleAdminEvents->count() > 1)
+                                    <form method="POST" action="{{ route('admin.switch-event') }}" class="mb-4 space-y-1">
+                                        @csrf
+                                        <label for="admin_event_id" class="text-xs font-bold uppercase tracking-wide text-slate-500">Editing event</label>
+                                        <select id="admin_event_id" name="event_id" class="mt-1 w-full rounded-lg border border-slate-200 px-2 py-2 text-sm" onchange="this.form.submit()">
+                                            @foreach($accessibleAdminEvents as $ev)
+                                                <option value="{{ $ev->id }}" @selected((int) $currentAdminEvent->id === (int) $ev->id)>{{ $ev->event_name }} @if(! $ev->is_enabled)(disabled)@endif</option>
+                                            @endforeach
+                                        </select>
+                                    </form>
+                                @else
+                                    <p class="mb-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                                        <span class="font-semibold text-slate-800">{{ $currentAdminEvent->event_name }}</span>
+                                    </p>
+                                @endif
+                            @endisset
+                            @if(Auth::user()->is_super_admin)
+                                <a class="mb-4 block rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-900 hover:bg-cyan-100" href="{{ route('admin.events.index') }}">Manage events (super admin)</a>
+                            @endif
                             <p class="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Admin Navigation</p>
                             <nav class="space-y-1 text-sm">
                                 <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.dashboard') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.dashboard') }}">Dashboard</a>
                                 <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.site-settings.*') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.site-settings.edit') }}">Site Settings</a>
+                                <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.agenda-items.*') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.agenda-items.index') }}">Agenda</a>
                                 <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.pages.*') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.pages.index') }}">Pages</a>
                                 <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.users.*') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.users.index') }}">Admin Users</a>
                                 <a class="block rounded px-3 py-2 hover:bg-slate-100 {{ request()->routeIs('admin.registrations.*') ? 'active bg-slate-100 font-semibold' : '' }}" href="{{ route('admin.registrations.index') }}">Registrations</a>

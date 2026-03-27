@@ -12,11 +12,19 @@ class DashboardController extends Controller
 {
     public function __invoke()
     {
+        $eventId = (int) session('admin_event_id');
+
         return view('admin.dashboard', [
-            'registrationCount' => Registration::query()->count(),
-            'speakerCount' => Speaker::query()->count(),
-            'unreadContactCount' => ContactMessage::query()->where('is_read', false)->count(),
-            'failedEmailCount' => SentEmail::query()->where('status', 'failed')->count(),
+            'registrationCount' => Registration::query()->where('event_id', $eventId)->count(),
+            'speakerCount' => Speaker::query()->where('event_id', $eventId)->count(),
+            'unreadContactCount' => ContactMessage::query()
+                ->where('event_id', $eventId)
+                ->where('is_read', false)
+                ->count(),
+            'failedEmailCount' => SentEmail::query()
+                ->where('event_id', $eventId)
+                ->where('status', 'failed')
+                ->count(),
         ]);
     }
 }

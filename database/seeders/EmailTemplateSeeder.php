@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\EmailTemplate;
+use App\Models\Event;
 use Illuminate\Database\Seeder;
 
 class EmailTemplateSeeder extends Seeder
@@ -12,6 +13,11 @@ class EmailTemplateSeeder extends Seeder
      */
     public function run(): void
     {
+        $eventId = Event::query()->value('id');
+        if (! $eventId) {
+            return;
+        }
+
         $variables = implode(PHP_EOL, [
             '{{event_name}}', '{{event_year}}', '{{first_name}}', '{{last_name}}',
             '{{district_name}}', '{{email}}', '{{title_role}}', '{{total_rooms_reserved}}',
@@ -20,7 +26,7 @@ class EmailTemplateSeeder extends Seeder
         ]);
 
         EmailTemplate::query()->updateOrCreate(
-            ['key' => 'registration_confirmation'],
+            ['event_id' => $eventId, 'key' => 'registration_confirmation'],
             [
                 'name' => 'Registration Confirmation',
                 'subject' => 'You are registered for {{event_name}} {{event_year}}',

@@ -14,16 +14,29 @@ class StoreRegistrationRequest extends FormRequest
 
     public function rules(): array
     {
+        $eventId = (int) session('public_event_id');
+
         return [
             'district_name' => ['required', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:120'],
             'last_name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('registrations', 'email')],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('registrations', 'email')->where('event_id', $eventId),
+            ],
             'title_role' => ['required', 'string', 'max:255'],
             'total_rooms_reserved' => ['nullable', 'integer', 'min:0'],
-            'tshirt_size_id' => ['nullable', 'exists:tshirt_sizes,id'],
+            'tshirt_size_id' => [
+                'nullable',
+                Rule::exists('tshirt_sizes', 'id')->where('event_id', $eventId),
+            ],
             'food_allergies' => ['nullable', 'string'],
-            'lunch_option_id' => ['nullable', 'exists:lunch_options,id'],
+            'lunch_option_id' => [
+                'nullable',
+                Rule::exists('lunch_options', 'id')->where('event_id', $eventId),
+            ],
         ];
     }
 

@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Mail\RegistrationConfirmationMail;
 use App\Models\EmailTemplate;
+use App\Models\Event;
 use App\Models\Registration;
 use App\Models\SentEmail;
-use App\Models\SiteSetting;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -15,8 +15,13 @@ class TemplateEmailService
 {
     public function sendRegistrationConfirmation(Registration $registration): SentEmail
     {
-        $template = EmailTemplate::query()->where('key', 'registration_confirmation')->firstOrFail();
-        $settings = SiteSetting::query()->firstOrFail();
+        $registration->loadMissing('event');
+        $settings = $registration->event ?? Event::query()->findOrFail($registration->event_id);
+
+        $template = EmailTemplate::query()
+            ->where('event_id', $registration->event_id)
+            ->where('key', 'registration_confirmation')
+            ->firstOrFail();
 
         $vars = $this->registrationVariables($registration, $settings);
         $subject = $this->merge($template->subject, $vars);
@@ -24,6 +29,7 @@ class TemplateEmailService
         $textBody = $this->merge($template->text_body ?? '', $vars);
 
         $sentEmail = SentEmail::query()->create([
+            'event_id' => $registration->event_id,
             'email_template_id' => $template->id,
             'registration_id' => $registration->id,
             'to_email' => $registration->email,
@@ -35,6 +41,7 @@ class TemplateEmailService
 
         if (! $template->is_active) {
             $sentEmail->update(['error_message' => 'Template is disabled.']);
+
             return $sentEmail;
         }
 
@@ -60,7 +67,7 @@ class TemplateEmailService
         return $sentEmail;
     }
 
-    public function registrationVariables(Registration $registration, SiteSetting $settings): array
+    public function registrationVariables(Registration $registration, Event $settings): array
     {
         $venueAddress = collect([
             $settings->venue_address_line_1,
@@ -97,4 +104,3 @@ class TemplateEmailService
         return $content;
     }
 }
-

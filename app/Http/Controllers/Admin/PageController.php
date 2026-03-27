@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\UpdatePageRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdatePageRequest;
 use App\Models\Page;
 
 class PageController extends Controller
 {
     public function index()
     {
-        $pages = Page::query()->orderBy('slug')->paginate(20);
+        $pages = Page::query()->forAdminEvent()->orderBy('slug')->paginate(20);
+
         return view('admin.pages.index', compact('pages'));
     }
 
