@@ -124,4 +124,54 @@ class AdminUserController extends Controller
 
         return back()->with('success', 'Admin user updated.');
     }
+
+    public function removeFromEvent(Request $request, User $user)
+    {
+        $eventId = (int) session('admin_event_id');
+
+        if ($user->is_super_admin) {
+            return back()->withErrors([
+                'remove' => 'Super admins are not tied to a single event. They cannot be removed from this list.',
+            ]);
+        }
+
+        if (! $user->managedEvents()->where('events.id', $eventId)->exists()) {
+            abort(404);
+        }
+
+        if ((int) $request->user()->id === (int) $user->id) {
+            return back()->withErrors([
+                'remove' => 'You cannot remove your own admin access for this event.',
+            ]);
+        }
+
+        if (! $this->eventHasAnotherManagerAfterRemoving($eventId, $user)) {
+            return back()->withErrors([
+                'remove' => 'Cannot remove the last admin for this event. Add another admin first, or ensure a super admin exists.',
+            ]);
+        }
+
+        $user->managedEvents()->detach($eventId);
+
+        if (! $user->managedEvents()->exists()) {
+            $user->update(['is_admin' => false]);
+        }
+
+        return back()->with('success', 'Admin removed from this event.');
+    }
+
+    private function eventHasAnotherManagerAfterRemoving(int $eventId, User $removedUser): bool
+    {
+        if (User::query()->where('is_super_admin', true)->exists()) {
+            return true;
+        }
+
+        return User::query()
+            ->where('id', '!=', $removedUser->id)
+            ->whereHas('managedEvents', function ($q) use ($eventId) {
+                $q->where('events.id', $eventId)
+                    ->where('event_user.is_active', true);
+            })
+            ->exists();
+    }
 }

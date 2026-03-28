@@ -47,18 +47,27 @@
                             @endif
                         </td>
                         <td class="p-2">
-                            <form method="POST" action="{{ route('admin.users.update', $adminUser) }}" class="flex flex-wrap items-center gap-2">
-                                @csrf @method('PUT')
-                                <input type="text" name="name" value="{{ $adminUser->name }}" class="admin-input !w-40">
-                                <input type="email" name="email" value="{{ $adminUser->email }}" class="admin-input !w-56">
-                                @if($adminUser->is_super_admin)
-                                    <input type="hidden" name="is_active" value="1">
-                                @else
-                                    <label class="text-sm"><input type="checkbox" name="is_active" value="1" @checked($adminUser->is_active)> Account active</label>
-                                    <label class="text-sm"><input type="checkbox" name="event_access_active" value="1" @checked(optional($adminUser->managedEvents->first()?->pivot)->is_active ?? false)> Access this event</label>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <form method="POST" action="{{ route('admin.users.update', $adminUser) }}" class="flex flex-wrap items-center gap-2">
+                                    @csrf @method('PUT')
+                                    <input type="text" name="name" value="{{ $adminUser->name }}" class="admin-input !w-40">
+                                    <input type="email" name="email" value="{{ $adminUser->email }}" class="admin-input !w-56">
+                                    @if($adminUser->is_super_admin)
+                                        <input type="hidden" name="is_active" value="1">
+                                    @else
+                                        <label class="text-sm"><input type="checkbox" name="is_active" value="1" @checked($adminUser->is_active)> Account active</label>
+                                        <label class="text-sm"><input type="checkbox" name="event_access_active" value="1" @checked(optional($adminUser->managedEvents->first()?->pivot)->is_active ?? false)> Access this event</label>
+                                    @endif
+                                    <button class="admin-btn">Save</button>
+                                </form>
+                                @if(! $adminUser->is_super_admin)
+                                    <form method="POST" action="{{ route('admin.users.remove-from-event', $adminUser) }}" class="inline" onsubmit="return confirm(@js('Remove this person from admins for '.$event->event_name.'? Their account stays; they only lose access to this event.'));">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="rounded border border-red-200 bg-white px-2 py-1 text-sm text-red-700 hover:bg-red-50">Remove from event</button>
+                                    </form>
                                 @endif
-                                <button class="admin-btn">Save</button>
-                            </form>
+                            </div>
                         </td>
                     </tr>
                 @endforeach
