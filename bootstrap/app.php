@@ -7,6 +7,7 @@ use App\Http\Middleware\HandlePublicEventContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $proxies = env('TRUSTED_PROXIES', '*');
+        $at = $proxies === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', $proxies))));
+        $middleware->trustProxies(
+            at: $at === [] ? '*' : $at,
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         $middleware->alias([
             'admin.access' => EnsureAdminAccess::class,
             'admin.event' => EnsureAdminEventContext::class,

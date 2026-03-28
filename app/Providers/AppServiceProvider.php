@@ -15,6 +15,7 @@ use App\Models\Speaker;
 use App\Models\Testimonial;
 use App\Models\TshirtSize;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (config('app.force_https')) {
+            URL::forceScheme('https');
+        }
+
         $scoped = [
             'speaker' => Speaker::class,
             'faq' => Faq::class,

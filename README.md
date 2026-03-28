@@ -232,6 +232,34 @@ php artisan view:cache
 
 If you change env/config/routes/views later, clear/rebuild caches accordingly.
 
+Recommended `.env` flags for a live HTTPS site:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+FORCE_HTTPS=true
+SESSION_SECURE_COOKIE=true
+LOG_LEVEL=error
+```
+
+**Trusted proxies** — The app trusts `X-Forwarded-*` headers so URLs and HTTPS detection work behind Apache, nginx, or a load balancer. Default `TRUSTED_PROXIES=*` in `.env.example` is convenient; restrict to `127.0.0.1` (or your balancer IPs) if you prefer a tighter setup.
+
+**Public uploads** — Ensure the web server can write speaker and agenda files:
+
+```bash
+sudo chmod -R 775 /var/www/vacybercon/public/uploads
+sudo chown -R www-data:www-data /var/www/vacybercon/public/uploads
+```
+
+**Queues** — Registration confirmation email is sent during the web request. For higher volume, switch to `QUEUE_CONNECTION=database` (or `redis`) and run a worker continuously:
+
+```bash
+php artisan queue:work --sleep=3 --tries=3
+```
+
+(Supervisor or systemd unit recommended so the worker restarts after reboot.)
+
 ---
 
 ## 11) Admin URLs
@@ -239,6 +267,8 @@ If you change env/config/routes/views later, clear/rebuild caches accordingly.
 - Login: `/login`
 - Admin Dashboard: `/admin`
 - Site Settings: `/admin/site-settings/edit`
+- Agenda: `/admin/agenda-items`
+- Events (super admin): `/admin/events`
 - Pages (What page content): `/admin/pages`
 - Admin Users (invite/enable/disable): `/admin/users`
 - Registrations: `/admin/registrations`
@@ -268,6 +298,7 @@ If you change env/config/routes/views later, clear/rebuild caches accordingly.
 ## 13) Security Notes
 
 - Keep `APP_DEBUG=false` in production.
-- Use HTTPS (Let’s Encrypt recommended).
+- Use HTTPS (Let’s Encrypt recommended) and set `FORCE_HTTPS=true` plus `SESSION_SECURE_COOKIE=true`.
+- Public forms are rate-limited (registration, contact, event selection, login, password reset).
 - Rotate default seeded admin password immediately.
 - Keep server packages and Composer dependencies updated.

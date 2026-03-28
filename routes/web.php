@@ -27,16 +27,22 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('public.event')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('public.home');
-    Route::post('/select-event', [PublicEventSelectionController::class, 'store'])->name('public.select-event');
+    Route::post('/select-event', [PublicEventSelectionController::class, 'store'])
+        ->middleware('throttle:30,1')
+        ->name('public.select-event');
     Route::get('/what', [PageController::class, 'what'])->name('public.what');
     Route::get('/when-where', [PageController::class, 'whenWhere'])->name('public.when-where');
     Route::get('/agenda', [AgendaController::class, 'index'])->name('public.agenda');
     Route::get('/agenda/{agenda_item}', [AgendaController::class, 'show'])->name('public.agenda.show');
     Route::get('/faq', [PageController::class, 'faq'])->name('public.faq');
     Route::get('/contact', [ContactController::class, 'create'])->name('public.contact');
-    Route::post('/contact', [ContactController::class, 'store'])->name('public.contact.store');
+    Route::post('/contact', [ContactController::class, 'store'])
+        ->middleware('throttle:12,1')
+        ->name('public.contact.store');
     Route::get('/register', [RegistrationController::class, 'create'])->name('public.register');
-    Route::post('/register', [RegistrationController::class, 'store'])->name('public.register.store');
+    Route::post('/register', [RegistrationController::class, 'store'])
+        ->middleware('throttle:8,1')
+        ->name('public.register.store');
     Route::get('/register/success', [RegistrationController::class, 'success'])->name('public.register.success');
 });
 
